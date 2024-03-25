@@ -1,4 +1,5 @@
 import { RequestHandler } from 'express';
+import { validationResult } from 'express-validator';
 
 export const getPosts: RequestHandler = (req, res, next) => {
   res.status(200).json({
@@ -16,6 +17,15 @@ export const getPosts: RequestHandler = (req, res, next) => {
 };
 
 export const postPosts: RequestHandler = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res
+      .status(422)
+      .json({
+        message: 'Validation Failed! Entered data incorrectly!',
+        errors: errors.array(),
+      });
+  }
   const { title, content } = req.body;
   // Create posts in DB
   res.status(201).json({
