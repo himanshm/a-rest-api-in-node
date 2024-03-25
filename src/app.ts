@@ -8,6 +8,7 @@ const app: Express = express();
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded  <form></form>
 app.use(bodyParser.json()); // application/json
 
+// Setup response headers to get rid of CORS errors
 app.use((req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader(

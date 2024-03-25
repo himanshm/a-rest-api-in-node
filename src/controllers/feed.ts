@@ -2,7 +2,16 @@ import { RequestHandler } from 'express';
 
 export const getPosts: RequestHandler = (req, res, next) => {
   res.status(200).json({
-    posts: [{ title: 'First Post', content: 'This is the first post' }],
+    posts: [
+      {
+        _id: '1',
+        title: 'First Post',
+        content: 'This is the first post',
+        imageUrl: 'images/OpenBook.jpg',
+        creator: { name: 'Himanshu' },
+        createdAt: new Date(),
+      },
+    ],
   });
 };
 
