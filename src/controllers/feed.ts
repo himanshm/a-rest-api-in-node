@@ -13,9 +13,20 @@ const clearImage = (filePath: string) => {
 };
 
 export const getPosts: RequestHandler = async (req, res, next) => {
+  const currentPage = parseInt(req.query.page as string, 10) || 1;
+  const perPage = 2;
+
+  let totalItems: number;
+
   try {
-    const posts = await Post.find();
-    res.status(200).json({ message: 'Fetched Posts successfully.', posts });
+    const postCount = await Post.find().countDocuments();
+    totalItems = postCount;
+    const posts = await Post.find()
+      .skip((currentPage - 1) * perPage)
+      .limit(perPage);
+    res
+      .status(200)
+      .json({ message: 'Fetched Posts successfully.', posts, totalItems });
   } catch (err) {
     handleError(err, req, res, next);
   }
