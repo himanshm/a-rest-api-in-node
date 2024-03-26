@@ -6,6 +6,7 @@ import express, {
   ErrorRequestHandler,
 } from 'express';
 import bodyParser from 'body-parser';
+import multer, { FileFilterCallback } from 'multer';
 
 import { mongooseConnect } from '../config/database';
 import feedRoutes from './routes/feed';
@@ -13,8 +14,42 @@ import path from 'path';
 
 const app: Express = express();
 
+const fileStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '..', 'public', 'images'));
+  },
+  filename: (req, file, cb) => {
+    // Replace colons (:) from the ISO string as they're not valid in filenames on some systems
+    const timestamp = new Date().toISOString().replace('/:/g', '-');
+    const uniqueSuffix = `${timestamp}-${file.originalname}`;
+    cb(null, uniqueSuffix);
+  },
+});
+
+type MulterFileFilter = (
+  req: Request,
+  file: Express.Multer.File,
+  cb: FileFilterCallback
+) => void;
+
+const fileFilter: MulterFileFilter = (req, file, cb) => {
+  if (
+    file.mimetype === 'image/png' ||
+    file.mimetype === 'image/jpg' ||
+    file.mimetype === 'image/jpeg'
+  ) {
+    cb(null, true);
+  } else {
+    cb(null, false);
+  }
+};
+
 // app.use(bodyParser.urlencoded()); // x-www-form-urlencoded  <form></form>
 app.use(bodyParser.json()); // application/json
+// Register multer for handling file uploads
+app.use(
+  multer({ storage: fileStorage, fileFilter: fileFilter }).single('image')
+);
 // Serving images from public/images
 app.use(
   '/images',

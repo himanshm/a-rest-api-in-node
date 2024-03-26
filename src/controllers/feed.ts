@@ -1,9 +1,16 @@
 import { RequestHandler } from 'express';
 import { validationResult } from 'express-validator';
+import fs from 'fs';
+import path from 'path';
 
 import Post from '../models/post';
 import HttpError from '../../utils/htttpError';
 import { handleError } from '../../utils/htttpError';
+
+const clearImage = (filePath: string) => {
+  filePath = path.join(__dirname, '..', '..', filePath);
+  fs.unlink(filePath, (err) => console.log(err));
+};
 
 export const getPosts: RequestHandler = async (req, res, next) => {
   try {
@@ -38,12 +45,21 @@ export const postPosts: RequestHandler = async (req, res, next) => {
     );
     throw error;
   }
+
+  if (!req.file) {
+    const error = new HttpError('No Image Provided!', 422);
+    throw error;
+  }
+
+  const { title, content } = req.body;
+  const image: Express.Multer.File = req.file;
+  // const imageUrl: string = image.path.split('public')[1];
+  const imageUrl = image.path;
   try {
-    const { title, content } = req.body;
     const post = new Post({
       title,
       content,
-      imageUrl: 'images/OpenBook.jpg',
+      imageUrl,
       creator: { name: 'Himanshu' },
     });
     const createdPost = await post.save();
@@ -52,6 +68,53 @@ export const postPosts: RequestHandler = async (req, res, next) => {
       message: 'Post created successfully!',
       post: createdPost,
     });
+  } catch (err) {
+    handleError(err, req, res, next);
+  }
+};
+
+export const updatePost: RequestHandler = async (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const error = new HttpError(
+      'Validation Failed! Entered data incorrectly!',
+      422
+    );
+    throw error;
+  }
+
+  const postId = req.params.postId;
+  const { title, content } = req.body;
+  let imageUrl = req.body.image; // If no new file was picked
+
+  // IF USER PICKS a FILE
+  if (req.file) {
+    const image: Express.Multer.File = req.file;
+    // const imageUrl: string = image.path.split('public')[1];
+    imageUrl = image.path;
+  }
+
+  if (!imageUrl) {
+    const err = new HttpError('No file Picked!', 422);
+    throw err;
+  }
+
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      const error = new HttpError('Could not find post', 404);
+      throw error;
+    }
+    if (imageUrl !== post.imageUrl) {
+      clearImage(post.imageUrl);
+    }
+    post.title = title;
+    post.content = content;
+    post.imageUrl = imageUrl;
+
+    const updatedPost = await post.save();
+
+    res.status(200).json({ message: 'Post Updated!', post: updatedPost });
   } catch (err) {
     handleError(err, req, res, next);
   }
