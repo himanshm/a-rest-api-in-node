@@ -119,3 +119,21 @@ export const updatePost: RequestHandler = async (req, res, next) => {
     handleError(err, req, res, next);
   }
 };
+
+export const deletePost: RequestHandler = async (req, res, next) => {
+  const postId = req.body.postId;
+
+  try {
+    const post = await Post.findById(postId);
+    if (!post) {
+      const error = new HttpError('Could not find post', 404);
+      throw error;
+    }
+    // Check loggedIN user
+    clearImage(post?.imageUrl);
+    await Post.findByIdAndDelete(postId);
+    res.status(200).json({ message: 'Post deleted!' });
+  } catch (err) {
+    handleError(err, req, res, next);
+  }
+};
