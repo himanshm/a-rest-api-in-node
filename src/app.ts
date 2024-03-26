@@ -1,6 +1,7 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import bodyParser from 'body-parser';
 
+import { mongooseConnect } from '../config/database';
 import feedRoutes from './routes/feed';
 
 const app: Express = express();
@@ -21,4 +22,16 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.use('/feed', feedRoutes);
 
-app.listen(8080);
+// Server Initialization
+async function initialize() {
+  try {
+    await mongooseConnect();
+
+    app.listen(3000);
+    console.log('Server is listening on port 3000.');
+  } catch (err) {
+    console.error('Error occurred:', err);
+  }
+}
+
+initialize();
