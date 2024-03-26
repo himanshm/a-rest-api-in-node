@@ -2,6 +2,7 @@ import { RequestHandler } from 'express';
 import { validationResult } from 'express-validator';
 
 import Post from '../models/post';
+import HttpError from '../../utils/htttpError';
 
 export const getPosts: RequestHandler = (req, res, next) => {
   res.status(200).json({
@@ -21,10 +22,11 @@ export const getPosts: RequestHandler = (req, res, next) => {
 export const postPosts: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    return res.status(422).json({
-      message: 'Validation Failed! Entered data incorrectly!',
-      errors: errors.array(),
-    });
+    const error = new HttpError(
+      'Validation Failed! Entered data incorrectly!',
+      422
+    );
+    throw error;
   }
   try {
     const { title, content } = req.body;
@@ -41,6 +43,18 @@ export const postPosts: RequestHandler = async (req, res, next) => {
       post: createdPost,
     });
   } catch (err) {
-    console.log(err);
+    if (err instanceof HttpError) {
+      if (!err.httpErrorCode) {
+        err.httpErrorCode = 500;
+      }
+      next(err);
+    } else if (err instanceof Error) {
+      const httpError = new HttpError(err.message, 500);
+      next(httpError);
+    } else {
+      // Handle cases where err might not be an Error object at all
+      const unknownError = new HttpError('An unknown error occurred', 500);
+      next(unknownError);
+    }
   }
 };
