@@ -3,20 +3,30 @@ import { validationResult } from 'express-validator';
 
 import Post from '../models/post';
 import HttpError from '../../utils/htttpError';
+import { handleError } from '../../utils/htttpError';
 
-export const getPosts: RequestHandler = (req, res, next) => {
-  res.status(200).json({
-    posts: [
-      {
-        _id: '1',
-        title: 'First Post',
-        content: 'This is the first post',
-        imageUrl: 'images/OpenBook.jpg',
-        creator: { name: 'Himanshu' },
-        createdAt: new Date(),
-      },
-    ],
-  });
+export const getPosts: RequestHandler = async (req, res, next) => {
+  try {
+    const posts = await Post.find();
+    res.status(200).json({ message: 'Fetched Posts successfully.', posts });
+  } catch (err) {
+    handleError(err, req, res, next);
+  }
+};
+
+export const getPost: RequestHandler = async (req, res, next) => {
+  try {
+    const postId = req.params.postId;
+    const post = await Post.findById(postId);
+    if (!post) {
+      const error = new HttpError('Could not find post', 404);
+      throw error;
+    }
+
+    res.status(200).json({ message: 'Post fetched!', post: post });
+  } catch (err) {
+    handleError(err, req, res, next);
+  }
 };
 
 export const postPosts: RequestHandler = async (req, res, next) => {
@@ -43,18 +53,6 @@ export const postPosts: RequestHandler = async (req, res, next) => {
       post: createdPost,
     });
   } catch (err) {
-    if (err instanceof HttpError) {
-      if (!err.httpErrorCode) {
-        err.httpErrorCode = 500;
-      }
-      next(err);
-    } else if (err instanceof Error) {
-      const httpError = new HttpError(err.message, 500);
-      next(httpError);
-    } else {
-      // Handle cases where err might not be an Error object at all
-      const unknownError = new HttpError('An unknown error occurred', 500);
-      next(unknownError);
-    }
+    handleError(err, req, res, next);
   }
 };
