@@ -76,7 +76,8 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
 
   const statusCode = err.statusCode || 500; // Default to 500 if statusCode not specified
   const message = err.message;
-  res.status(statusCode).json({ message });
+  const data = err.data;
+  res.status(statusCode).json({ message, data });
 };
 
 app.use(errorHandler);

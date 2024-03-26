@@ -51,7 +51,7 @@ export const postPosts: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     const error = new HttpError(
-      'Validation Failed! Entered data incorrectly!',
+      'Validation Failed! Entered data is incorrect!',
       422
     );
     throw error;

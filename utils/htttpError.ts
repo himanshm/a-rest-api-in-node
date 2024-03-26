@@ -2,10 +2,12 @@ import { Request, Response, NextFunction } from 'express';
 
 class HttpError extends Error {
   httpErrorCode: number;
+  data?: string[];
 
-  constructor(message: string, httpErrorCode: number) {
+  constructor(message: string, httpErrorCode: number, data?: string[]) {
     super(message); // Call the constructor of the base Error class.
     this.httpErrorCode = httpErrorCode;
+    this.data = data;
     this.name = this.constructor.name; // Set the error name to the class name.
   }
 }
