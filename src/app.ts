@@ -10,6 +10,7 @@ import multer, { FileFilterCallback } from 'multer';
 
 import { mongooseConnect } from '../config/database';
 import feedRoutes from './routes/feed';
+import authRoutes from './routes/auth';
 import path from 'path';
 
 const app: Express = express();
@@ -68,6 +69,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 app.use('/feed', feedRoutes);
+app.use('/auth', authRoutes);
 
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
   console.error(err); // Log the error for server-side debugging
