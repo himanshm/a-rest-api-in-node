@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express';
 import { validationResult } from 'express-validator';
+import mongoose from 'mongoose';
 import fs from 'fs';
 import path from 'path';
 
@@ -160,6 +161,17 @@ export const deletePost: RequestHandler = async (req, res, next) => {
     }
     clearImage(post?.imageUrl);
     await Post.findByIdAndDelete(postId);
+    const user = await User.findById(req.userId);
+
+    if (!user) {
+      const error = new HttpError('Could not find user', 404);
+      throw error;
+    }
+
+    (
+      user.posts as unknown as mongoose.Types.Array<mongoose.Schema.Types.ObjectId>
+    ).pull(postId);
+    await user.save();
     res.status(200).json({ message: 'Post deleted!' });
   } catch (err) {
     handleError(err, req, res, next);
