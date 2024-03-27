@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 import Post from '../models/post';
+import User from '../models/user';
 import HttpError from '../../utils/htttpError';
 import { handleError } from '../../utils/htttpError';
 
@@ -71,13 +72,22 @@ export const postPosts: RequestHandler = async (req, res, next) => {
       title,
       content,
       imageUrl,
-      creator: { name: 'Himanshu' },
+      creator: req.userId,
     });
-    const createdPost = await post.save();
+    await post.save();
+    const user = await User.findById(req.userId);
+    if (!user) {
+      const error = new HttpError('Could not find user', 404);
+      throw error;
+    }
+
+    user.posts.push(post._id);
+    await user.save();
 
     res.status(201).json({
       message: 'Post created successfully!',
-      post: createdPost,
+      post: post,
+      creator: { _id: user._id, name: user.name },
     });
   } catch (err) {
     handleError(err, req, res, next);

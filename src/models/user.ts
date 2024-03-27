@@ -1,16 +1,16 @@
-import mongoose, { Schema, Model, ObjectId } from 'mongoose';
+import mongoose, { Schema, Model, Types } from 'mongoose';
 
 interface IUser extends Document {
   email: string;
   password: string;
   name: string;
   status: string;
-  posts: ObjectId[];
+  posts: Types.ObjectId[];
 }
 
-type UserModal = Model<IUser>;
+type UserModel = Model<IUser>;
 
-const userSchema = new Schema<IUser, UserModal>({
+const userSchema = new Schema<IUser, UserModel>({
   email: {
     type: String,
     required: true,
@@ -35,5 +35,5 @@ const userSchema = new Schema<IUser, UserModal>({
   ],
 });
 
-const User = mongoose.model<IUser, UserModal>('User', userSchema);
+const User = mongoose.model<IUser, UserModel>('User', userSchema);
 export default User;
