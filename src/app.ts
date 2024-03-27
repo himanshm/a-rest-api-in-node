@@ -5,6 +5,7 @@ import express, {
   NextFunction,
   ErrorRequestHandler,
 } from 'express';
+import 'dotenv/config';
 import bodyParser from 'body-parser';
 import multer, { FileFilterCallback } from 'multer';
 
@@ -14,6 +15,13 @@ import authRoutes from './routes/auth';
 import path from 'path';
 
 const app: Express = express();
+
+const port = process.env.PORT;
+
+if (!port) {
+  throw new Error('No Connection port is provided!');
+}
+console.log(port);
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -87,8 +95,8 @@ async function initialize() {
   try {
     await mongooseConnect();
 
-    app.listen(3000);
-    console.log('Server is listening on port 3000.');
+    app.listen(port);
+    console.log(`Server is listening on port ${port}`);
   } catch (err) {
     console.error('Error occurred:', err);
   }
