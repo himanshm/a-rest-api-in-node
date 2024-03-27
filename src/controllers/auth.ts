@@ -11,7 +11,7 @@ import { handleError } from '../../utils/htttpError';
 
 // const secretKey = crypto.randomBytes(32).toString('hex');
 // console.log(secretKey);
-const privateKey = process.env.PRIVATE_KEY;
+const privateKey = process.env.JWT_SECRET_KEY;
 if (!privateKey) {
   throw new Error('No Private key exists');
 }

@@ -14,6 +14,14 @@ import feedRoutes from './routes/feed';
 import authRoutes from './routes/auth';
 import path from 'path';
 
+declare global {
+  namespace Express {
+    interface Request {
+      userId?: string;
+    }
+  }
+}
+
 const app: Express = express();
 
 const port = process.env.PORT;

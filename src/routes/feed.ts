@@ -7,14 +7,16 @@ import {
   postPosts,
   updatePost,
 } from '../controllers/feed';
+import isAuth from '../../middleware/is-auth';
 
 const router = Router();
 
 // GET /feed/posts
-router.get('/posts', getPosts);
+router.get('/posts', isAuth, getPosts);
 
 router.post(
   '/posts',
+  isAuth,
   [
     body('title').trim().isLength({ min: 5 }),
     body('content').trim().isLength({ min: 5 }),
@@ -22,10 +24,11 @@ router.post(
   postPosts
 );
 
-router.get('/post/:postId', getPost);
+router.get('/post/:postId', isAuth, getPost);
 
 router.put(
   '/post/:postId',
+  isAuth,
   [
     body('title').trim().isLength({ min: 5 }),
     body('content').trim().isLength({ min: 5 }),
@@ -33,6 +36,6 @@ router.put(
   updatePost
 );
 
-router.delete('/post/:postId', deletePost);
+router.delete('/post/:postId', isAuth, deletePost);
 
 export default router;
