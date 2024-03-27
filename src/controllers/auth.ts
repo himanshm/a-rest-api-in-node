@@ -1,10 +1,20 @@
 import { RequestHandler } from 'express';
+import 'dotenv/config';
 import { validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+// import crypto from 'crypto';
 
 import User from '../models/user';
 import HttpError from '../../utils/htttpError';
 import { handleError } from '../../utils/htttpError';
+
+// const secretKey = crypto.randomBytes(32).toString('hex');
+// console.log(secretKey);
+const privateKey = process.env.PRIVATE_KEY;
+if (!privateKey) {
+  throw new Error('No Private key exists');
+}
 
 export const signup: RequestHandler = async (req, res, next) => {
   const errors = validationResult(req);
@@ -52,6 +62,14 @@ export const login: RequestHandler = async (req, res, next) => {
       const error = new HttpError('Wrong Password', 401);
       return next(error);
     }
+
+    const token = jwt.sign(
+      { email: user.email, userId: user._id.toString() },
+      privateKey,
+      { expiresIn: '1h' }
+    );
+
+    res.status(200).json({ token, userId: user._id.toString() });
   } catch (err) {
     handleError(err, req, res, next);
   }
