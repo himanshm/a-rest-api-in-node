@@ -126,6 +126,10 @@ export const updatePost: RequestHandler = async (req, res, next) => {
       const error = new HttpError('Could not find post', 404);
       throw error;
     }
+    if (post.creator.toString() !== req.userId) {
+      const error = new HttpError('Not Authorised!', 403);
+      throw error;
+    }
     if (imageUrl !== post.imageUrl) {
       clearImage(post.imageUrl);
     }
@@ -150,7 +154,10 @@ export const deletePost: RequestHandler = async (req, res, next) => {
       const error = new HttpError('Could not find post', 404);
       throw error;
     }
-    // Check loggedIN user
+    if (post.creator.toString() !== req.userId) {
+      const error = new HttpError('Not Authorised!', 403);
+      throw error;
+    }
     clearImage(post?.imageUrl);
     await Post.findByIdAndDelete(postId);
     res.status(200).json({ message: 'Post deleted!' });
